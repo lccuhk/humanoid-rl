@@ -26,14 +26,16 @@ class HumanoidMuJoCoEnv(gym.Env):
         render_mode: Optional[str] = None,
         model_path: Optional[str] = None,
         task: str = "walk",
-        forward_reward_weight: float = 1.0,
+        forward_reward_weight: float = 5.0,
         ctrl_cost_weight: float = 0.1,
         contact_cost_weight: float = 5e-4,
-        healthy_reward: float = 5.0,
+        healthy_reward: float = 1.0,
         terminate_when_unhealthy: bool = True,
         healthy_z_range: Tuple[float, float] = (0.8, 2.0),
         reset_noise_scale: float = 0.01,
         exclude_current_positions_from_observation: bool = True,
+        backward_penalty_weight: float = 10.0,
+        position_reward_weight: float = 2.0,
     ):
         """
         Initialize the humanoid MuJoCo environment.
@@ -63,6 +65,9 @@ class HumanoidMuJoCoEnv(gym.Env):
         self.healthy_z_range = healthy_z_range
         self.reset_noise_scale = reset_noise_scale
         self.exclude_current_positions_from_observation = exclude_current_positions_from_observation
+        self.backward_penalty_weight = backward_penalty_weight
+        self.position_reward_weight = position_reward_weight
+        self.start_x_position = 0.0
         
         if model_path is None:
             self.model_path = self._get_default_model_path()
@@ -244,12 +249,33 @@ class HumanoidMuJoCoEnv(gym.Env):
         if self.env is not None:
             observation, reward, terminated, truncated, info = self.env.step(action)
             
+            forward_vel = info.get('x_velocity', 0)
+            current_x = self.env.unwrapped.data.qpos[0]
+            
+            forward_reward = self.forward_reward_weight * forward_vel
+            
+            backward_penalty = 0
+            if forward_vel < -0.1:
+                backward_penalty = self.backward_penalty_weight * abs(forward_vel)
+            
+            position_reward = 0
+            if current_x > self.start_x_position:
+                position_reward = self.position_reward_weight * (current_x - self.start_x_position)
+            
             if self.task == "run":
-                forward_vel = info.get('x_velocity', 0)
-                reward = reward + 0.5 * forward_vel
+                forward_reward *= 2.0
+                position_reward *= 1.5
+            
+            reward = reward + forward_reward + position_reward - backward_penalty
             
             info['task'] = self.task
             info['is_healthy'] = self._is_healthy()
+            info['reward_forward'] = forward_reward
+            info['reward_position'] = position_reward
+            info['penalty_backward'] = -backward_penalty
+            info['x_position'] = current_x
+            info['start_x_position'] = self.start_x_position
+            info['distance_traveled'] = current_x - self.start_x_position
             
             if self.render_mode == "human":
                 self.env.render()
@@ -267,7 +293,17 @@ class HumanoidMuJoCoEnv(gym.Env):
             truncated = False
             
             forward_vel = self.data.qvel[0]
+            current_x = self.data.qpos[0]
+            
             forward_reward = self.forward_reward_weight * forward_vel
+            
+            backward_penalty = 0
+            if forward_vel < -0.1:
+                backward_penalty = self.backward_penalty_weight * abs(forward_vel)
+            
+            position_reward = 0
+            if current_x > self.start_x_position:
+                position_reward = self.position_reward_weight * (current_x - self.start_x_position)
             
             ctrl_cost = self.ctrl_cost_weight * np.sum(np.square(action))
             
@@ -279,17 +315,23 @@ class HumanoidMuJoCoEnv(gym.Env):
             healthy_reward = self.healthy_reward if healthy else 0
             
             if self.task == "run":
-                forward_reward *= 1.5
+                forward_reward *= 2.0
+                position_reward *= 1.5
             
-            reward = forward_reward + healthy_reward - ctrl_cost - contact_cost
+            reward = forward_reward + position_reward + healthy_reward - ctrl_cost - contact_cost - backward_penalty
             
             info = {
                 'reward_forward': forward_reward,
+                'reward_position': position_reward,
                 'reward_healthy': healthy_reward,
                 'reward_ctrl': -ctrl_cost,
                 'reward_contact': -contact_cost,
+                'penalty_backward': -backward_penalty,
                 'x_velocity': forward_vel,
+                'x_position': current_x,
                 'z_position': self.data.qpos[2],
+                'start_x_position': self.start_x_position,
+                'distance_traveled': current_x - self.start_x_position,
                 'task': self.task,
                 'is_healthy': healthy
             }
@@ -318,7 +360,9 @@ class HumanoidMuJoCoEnv(gym.Env):
         """
         if self.env is not None:
             observation, info = self.env.reset(seed=seed, options=options)
+            self.start_x_position = self.env.unwrapped.data.qpos[0]
             info['task'] = self.task
+            info['start_x_position'] = self.start_x_position
             return observation, info
         else:
             super().reset(seed=seed)
@@ -339,10 +383,13 @@ class HumanoidMuJoCoEnv(gym.Env):
             
             mujoco.mj_forward(self.model, self.data)
             
+            self.start_x_position = self.data.qpos[0]
+            
             observation = self._get_observation()
             info = {
                 'task': self.task,
-                'is_healthy': self._is_healthy()
+                'is_healthy': self._is_healthy(),
+                'start_x_position': self.start_x_position
             }
             
             return observation, info
