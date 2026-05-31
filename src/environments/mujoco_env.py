@@ -36,6 +36,9 @@ class HumanoidMuJoCoEnv(gym.Env):
         exclude_current_positions_from_observation: bool = True,
         backward_penalty_weight: float = 10.0,
         position_reward_weight: float = 2.0,
+        velocity_bonus_weight: float = 0.0,
+        air_time_reward_weight: float = 0.0,
+        energy_efficiency_weight: float = 0.0,
     ):
         """
         Initialize the humanoid MuJoCo environment.
@@ -67,7 +70,12 @@ class HumanoidMuJoCoEnv(gym.Env):
         self.exclude_current_positions_from_observation = exclude_current_positions_from_observation
         self.backward_penalty_weight = backward_penalty_weight
         self.position_reward_weight = position_reward_weight
+        self.velocity_bonus_weight = velocity_bonus_weight
+        self.air_time_reward_weight = air_time_reward_weight
+        self.energy_efficiency_weight = energy_efficiency_weight
         self.start_x_position = 0.0
+        self.air_time = 0.0
+        self.last_foot_contact = True
         
         if model_path is None:
             self.model_path = self._get_default_model_path()
@@ -262,20 +270,43 @@ class HumanoidMuJoCoEnv(gym.Env):
             if current_x > self.start_x_position:
                 position_reward = self.position_reward_weight * (current_x - self.start_x_position)
             
-            if self.task == "run":
-                forward_reward *= 2.0
-                position_reward *= 1.5
+            velocity_bonus = 0.0
+            air_time_reward = 0.0
+            energy_efficiency = 0.0
             
-            reward = reward + forward_reward + position_reward - backward_penalty
+            if self.task == "run":
+                forward_reward *= 3.0
+                position_reward *= 2.0
+                
+                if forward_vel > 2.0:
+                    velocity_bonus = self.velocity_bonus_weight * (forward_vel - 2.0) ** 2
+                
+                foot_contact = self._check_foot_contact()
+                if not foot_contact and self.last_foot_contact:
+                    self.air_time = 0.0
+                elif not foot_contact:
+                    self.air_time += 0.01
+                    air_time_reward = self.air_time_reward_weight * self.air_time
+                self.last_foot_contact = foot_contact
+                
+                if forward_vel > 0.5:
+                    energy_efficiency = self.energy_efficiency_weight * (forward_vel / (np.sum(np.abs(action)) + 1e-6))
+            
+            reward = reward + forward_reward + position_reward + velocity_bonus + air_time_reward + energy_efficiency - backward_penalty
             
             info['task'] = self.task
             info['is_healthy'] = self._is_healthy()
             info['reward_forward'] = forward_reward
             info['reward_position'] = position_reward
+            info['reward_velocity_bonus'] = velocity_bonus
+            info['reward_air_time'] = air_time_reward
+            info['reward_energy_efficiency'] = energy_efficiency
             info['penalty_backward'] = -backward_penalty
             info['x_position'] = current_x
             info['start_x_position'] = self.start_x_position
             info['distance_traveled'] = current_x - self.start_x_position
+            info['air_time'] = self.air_time
+            info['foot_contact'] = self.last_foot_contact
             
             if self.render_mode == "human":
                 self.env.render()
@@ -314,15 +345,36 @@ class HumanoidMuJoCoEnv(gym.Env):
             
             healthy_reward = self.healthy_reward if healthy else 0
             
-            if self.task == "run":
-                forward_reward *= 2.0
-                position_reward *= 1.5
+            velocity_bonus = 0.0
+            air_time_reward = 0.0
+            energy_efficiency = 0.0
             
-            reward = forward_reward + position_reward + healthy_reward - ctrl_cost - contact_cost - backward_penalty
+            if self.task == "run":
+                forward_reward *= 3.0
+                position_reward *= 2.0
+                
+                if forward_vel > 2.0:
+                    velocity_bonus = self.velocity_bonus_weight * (forward_vel - 2.0) ** 2
+                
+                foot_contact = self._check_foot_contact()
+                if not foot_contact and self.last_foot_contact:
+                    self.air_time = 0.0
+                elif not foot_contact:
+                    self.air_time += 0.01
+                    air_time_reward = self.air_time_reward_weight * self.air_time
+                self.last_foot_contact = foot_contact
+                
+                if forward_vel > 0.5:
+                    energy_efficiency = self.energy_efficiency_weight * (forward_vel / (np.sum(np.abs(action)) + 1e-6))
+            
+            reward = forward_reward + position_reward + healthy_reward + velocity_bonus + air_time_reward + energy_efficiency - ctrl_cost - contact_cost - backward_penalty
             
             info = {
                 'reward_forward': forward_reward,
                 'reward_position': position_reward,
+                'reward_velocity_bonus': velocity_bonus,
+                'reward_air_time': air_time_reward,
+                'reward_energy_efficiency': energy_efficiency,
                 'reward_healthy': healthy_reward,
                 'reward_ctrl': -ctrl_cost,
                 'reward_contact': -contact_cost,
@@ -332,6 +384,8 @@ class HumanoidMuJoCoEnv(gym.Env):
                 'z_position': self.data.qpos[2],
                 'start_x_position': self.start_x_position,
                 'distance_traveled': current_x - self.start_x_position,
+                'air_time': self.air_time,
+                'foot_contact': self.last_foot_contact,
                 'task': self.task,
                 'is_healthy': healthy
             }
@@ -361,8 +415,12 @@ class HumanoidMuJoCoEnv(gym.Env):
         if self.env is not None:
             observation, info = self.env.reset(seed=seed, options=options)
             self.start_x_position = self.env.unwrapped.data.qpos[0]
+            self.air_time = 0.0
+            self.last_foot_contact = True
             info['task'] = self.task
             info['start_x_position'] = self.start_x_position
+            info['air_time'] = self.air_time
+            info['foot_contact'] = self.last_foot_contact
             return observation, info
         else:
             super().reset(seed=seed)
@@ -384,12 +442,16 @@ class HumanoidMuJoCoEnv(gym.Env):
             mujoco.mj_forward(self.model, self.data)
             
             self.start_x_position = self.data.qpos[0]
+            self.air_time = 0.0
+            self.last_foot_contact = True
             
             observation = self._get_observation()
             info = {
                 'task': self.task,
                 'is_healthy': self._is_healthy(),
-                'start_x_position': self.start_x_position
+                'start_x_position': self.start_x_position,
+                'air_time': self.air_time,
+                'foot_contact': self.last_foot_contact
             }
             
             return observation, info
@@ -435,13 +497,29 @@ class HumanoidMuJoCoEnv(gym.Env):
                 'x_velocity': self.env.unwrapped.data.qvel[0],
                 'is_healthy': self._is_healthy()
             }
-        else:
-            return {
-                'qpos': self.data.qpos.copy(),
-                'qvel': self.data.qvel.copy(),
-                'x_position': self.data.qpos[0],
-                'y_position': self.data.qpos[1],
-                'z_position': self.data.qpos[2],
-                'x_velocity': self.data.qvel[0],
-                'is_healthy': self._is_healthy()
-            }
+    
+    def _check_foot_contact(self) -> bool:
+        """Check if either foot is in contact with the ground."""
+        try:
+            if self.env is not None:
+                data = self.env.unwrapped.data
+            else:
+                data = self.data
+            
+            for i in range(data.ncon):
+                contact = data.contact[i]
+                geom1_name = data.model.geom(contact.geom1).name
+                geom2_name = data.model.geom(contact.geom2).name
+                
+                foot_geoms = ['foot', 'left_foot', 'right_foot', 'toe', 'heel']
+                floor_geoms = ['floor', 'ground', 'plane']
+                
+                for foot in foot_geoms:
+                    for floor in floor_geoms:
+                        if (foot in geom1_name.lower() and floor in geom2_name.lower()) or \
+                           (foot in geom2_name.lower() and floor in geom1_name.lower()):
+                            return True
+            
+            return False
+        except Exception as e:
+            return True
