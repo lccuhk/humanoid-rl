@@ -39,6 +39,7 @@ class HumanoidMuJoCoEnv(gym.Env):
         velocity_bonus_weight: float = 30.0,
         air_time_reward_weight: float = 50.0,
         energy_efficiency_weight: float = 5.0,
+        fall_penalty: float = 50.0,
     ):
         """
         Initialize the humanoid MuJoCo environment.
@@ -73,6 +74,7 @@ class HumanoidMuJoCoEnv(gym.Env):
         self.velocity_bonus_weight = velocity_bonus_weight
         self.air_time_reward_weight = air_time_reward_weight
         self.energy_efficiency_weight = energy_efficiency_weight
+        self.fall_penalty = fall_penalty
         self.start_x_position = 0.0
         self.air_time = 0.0
         self.last_foot_contact = True
@@ -291,7 +293,7 @@ class HumanoidMuJoCoEnv(gym.Env):
                     self.air_time += 0.01
                     air_time_reward = self.air_time_reward_weight * self.air_time * min(forward_vel / 3.0, 1.0)
                 elif not foot_contact and not is_healthy:
-                    fall_penalty = 50.0
+                    fall_penalty = self.fall_penalty
                     self.air_time = 0.0
                 self.last_foot_contact = foot_contact
                 
@@ -372,7 +374,7 @@ class HumanoidMuJoCoEnv(gym.Env):
                     self.air_time += 0.01
                     air_time_reward = self.air_time_reward_weight * self.air_time * min(forward_vel / 3.0, 1.0)
                 elif not foot_contact and not healthy:
-                    fall_penalty = 50.0
+                    fall_penalty = self.fall_penalty
                     self.air_time = 0.0
                 self.last_foot_contact = foot_contact
                 
