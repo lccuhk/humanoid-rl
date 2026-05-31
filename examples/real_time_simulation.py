@@ -79,6 +79,16 @@ def parse_args():
         help='Energy efficiency weight for optimized run env'
     )
     
+    parser.add_argument(
+        '--healthy_reward', type=float, default=1.0,
+        help='Healthy reward weight (default: 1.0)'
+    )
+    
+    parser.add_argument(
+        '--fall_penalty', type=float, default=50.0,
+        help='Fall penalty (default: 50.0)'
+    )
+    
     return parser.parse_args()
 
 
@@ -158,7 +168,8 @@ def simulate_episode(env, agent, max_steps, task_name, speed, show_stats, episod
 
 
 def simulate_task(task, model_path, n_episodes, max_steps, speed, show_stats,
-                  velocity_bonus_weight, air_time_reward_weight, energy_efficiency_weight):
+                  velocity_bonus_weight, air_time_reward_weight, energy_efficiency_weight,
+                  healthy_reward, fall_penalty):
     """Simulate multiple episodes for a specific task."""
     print("\n" + "="*70)
     print(f"REAL-TIME SIMULATION: {task.upper()} TASK")
@@ -168,6 +179,8 @@ def simulate_task(task, model_path, n_episodes, max_steps, speed, show_stats,
     print(f"Max steps per episode: {max_steps}")
     print(f"Simulation speed: {speed}x")
     print(f"Show statistics: {show_stats}")
+    print(f"Healthy reward: {healthy_reward}")
+    print(f"Fall penalty: {fall_penalty}")
     print("="*70)
     
     if task == 'run':
@@ -175,19 +188,20 @@ def simulate_task(task, model_path, n_episodes, max_steps, speed, show_stats,
             render_mode='human',
             task='run',
             forward_reward_weight=5.0,
-            healthy_reward=1.0,
+            healthy_reward=healthy_reward,
             backward_penalty_weight=10.0,
             position_reward_weight=2.0,
             velocity_bonus_weight=velocity_bonus_weight,
             air_time_reward_weight=air_time_reward_weight,
             energy_efficiency_weight=energy_efficiency_weight,
+            fall_penalty=fall_penalty,
         )
     else:
         env = HumanoidMuJoCoEnv(
             render_mode='human',
             task='walk',
             forward_reward_weight=5.0,
-            healthy_reward=1.0,
+            healthy_reward=healthy_reward,
             backward_penalty_weight=10.0,
             position_reward_weight=2.0,
         )
@@ -250,7 +264,8 @@ def main():
                 'walk', args.walk_model, args.n_episodes, args.max_steps,
                 args.speed, args.show_stats,
                 args.velocity_bonus_weight, args.air_time_reward_weight,
-                args.energy_efficiency_weight
+                args.energy_efficiency_weight,
+                args.healthy_reward, args.fall_penalty
             )
             all_results.extend(walk_results)
             
@@ -265,7 +280,8 @@ def main():
                 'run', args.run_model, args.n_episodes, args.max_steps,
                 args.speed, args.show_stats,
                 args.velocity_bonus_weight, args.air_time_reward_weight,
-                args.energy_efficiency_weight
+                args.energy_efficiency_weight,
+                args.healthy_reward, args.fall_penalty
             )
             all_results.extend(run_results)
     
