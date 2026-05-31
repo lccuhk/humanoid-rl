@@ -36,9 +36,9 @@ class HumanoidMuJoCoEnv(gym.Env):
         exclude_current_positions_from_observation: bool = True,
         backward_penalty_weight: float = 10.0,
         position_reward_weight: float = 2.0,
-        velocity_bonus_weight: float = 0.0,
-        air_time_reward_weight: float = 0.0,
-        energy_efficiency_weight: float = 0.0,
+        velocity_bonus_weight: float = 30.0,
+        air_time_reward_weight: float = 50.0,
+        energy_efficiency_weight: float = 5.0,
     ):
         """
         Initialize the humanoid MuJoCo environment.
@@ -273,6 +273,7 @@ class HumanoidMuJoCoEnv(gym.Env):
             velocity_bonus = 0.0
             air_time_reward = 0.0
             energy_efficiency = 0.0
+            fall_penalty = 0.0
             
             if self.task == "run":
                 forward_reward *= 3.0
@@ -282,17 +283,22 @@ class HumanoidMuJoCoEnv(gym.Env):
                     velocity_bonus = self.velocity_bonus_weight * (forward_vel - 2.0) ** 2
                 
                 foot_contact = self._check_foot_contact()
+                is_healthy = self._is_healthy()
+                
                 if not foot_contact and self.last_foot_contact:
                     self.air_time = 0.0
-                elif not foot_contact:
+                elif not foot_contact and is_healthy and forward_vel > 1.0:
                     self.air_time += 0.01
-                    air_time_reward = self.air_time_reward_weight * self.air_time
+                    air_time_reward = self.air_time_reward_weight * self.air_time * min(forward_vel / 3.0, 1.0)
+                elif not foot_contact and not is_healthy:
+                    fall_penalty = 50.0
+                    self.air_time = 0.0
                 self.last_foot_contact = foot_contact
                 
-                if forward_vel > 0.5:
+                if forward_vel > 0.5 and is_healthy:
                     energy_efficiency = self.energy_efficiency_weight * (forward_vel / (np.sum(np.abs(action)) + 1e-6))
             
-            reward = reward + forward_reward + position_reward + velocity_bonus + air_time_reward + energy_efficiency - backward_penalty
+            reward = reward + forward_reward + position_reward + velocity_bonus + air_time_reward + energy_efficiency - backward_penalty - fall_penalty
             
             info['task'] = self.task
             info['is_healthy'] = self._is_healthy()
@@ -302,6 +308,7 @@ class HumanoidMuJoCoEnv(gym.Env):
             info['reward_air_time'] = air_time_reward
             info['reward_energy_efficiency'] = energy_efficiency
             info['penalty_backward'] = -backward_penalty
+            info['penalty_fall'] = -fall_penalty
             info['x_position'] = current_x
             info['start_x_position'] = self.start_x_position
             info['distance_traveled'] = current_x - self.start_x_position
@@ -348,6 +355,7 @@ class HumanoidMuJoCoEnv(gym.Env):
             velocity_bonus = 0.0
             air_time_reward = 0.0
             energy_efficiency = 0.0
+            fall_penalty = 0.0
             
             if self.task == "run":
                 forward_reward *= 3.0
@@ -357,17 +365,21 @@ class HumanoidMuJoCoEnv(gym.Env):
                     velocity_bonus = self.velocity_bonus_weight * (forward_vel - 2.0) ** 2
                 
                 foot_contact = self._check_foot_contact()
+                
                 if not foot_contact and self.last_foot_contact:
                     self.air_time = 0.0
-                elif not foot_contact:
+                elif not foot_contact and healthy and forward_vel > 1.0:
                     self.air_time += 0.01
-                    air_time_reward = self.air_time_reward_weight * self.air_time
+                    air_time_reward = self.air_time_reward_weight * self.air_time * min(forward_vel / 3.0, 1.0)
+                elif not foot_contact and not healthy:
+                    fall_penalty = 50.0
+                    self.air_time = 0.0
                 self.last_foot_contact = foot_contact
                 
-                if forward_vel > 0.5:
+                if forward_vel > 0.5 and healthy:
                     energy_efficiency = self.energy_efficiency_weight * (forward_vel / (np.sum(np.abs(action)) + 1e-6))
             
-            reward = forward_reward + position_reward + healthy_reward + velocity_bonus + air_time_reward + energy_efficiency - ctrl_cost - contact_cost - backward_penalty
+            reward = forward_reward + position_reward + healthy_reward + velocity_bonus + air_time_reward + energy_efficiency - ctrl_cost - contact_cost - backward_penalty - fall_penalty
             
             info = {
                 'reward_forward': forward_reward,
@@ -379,6 +391,7 @@ class HumanoidMuJoCoEnv(gym.Env):
                 'reward_ctrl': -ctrl_cost,
                 'reward_contact': -contact_cost,
                 'penalty_backward': -backward_penalty,
+                'penalty_fall': -fall_penalty,
                 'x_velocity': forward_vel,
                 'x_position': current_x,
                 'z_position': self.data.qpos[2],

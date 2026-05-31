@@ -41,7 +41,7 @@ class DetailedLoggingCallback(BaseCallback):
                 'step', 'episode', 'reward', 'reward_forward', 'reward_position',
                 'reward_velocity_bonus', 'reward_air_time', 'reward_energy_efficiency',
                 'reward_healthy', 'reward_ctrl', 'reward_contact', 'penalty_backward',
-                'x_velocity', 'x_position', 'z_position', 'distance_traveled',
+                'penalty_fall', 'x_velocity', 'x_position', 'z_position', 'distance_traveled',
                 'air_time', 'foot_contact', 'timestamp'
             ])
     
@@ -66,6 +66,7 @@ class DetailedLoggingCallback(BaseCallback):
             'reward_ctrl': float(info.get('reward_ctrl', 0)),
             'reward_contact': float(info.get('reward_contact', 0)),
             'penalty_backward': float(info.get('penalty_backward', 0)),
+            'penalty_fall': float(info.get('penalty_fall', 0)),
             'x_velocity': float(info.get('x_velocity', 0)),
             'x_position': float(info.get('x_position', 0)),
             'z_position': float(info.get('z_position', 0)),
@@ -81,8 +82,8 @@ class DetailedLoggingCallback(BaseCallback):
             step_log['reward_velocity_bonus'], step_log['reward_air_time'],
             step_log['reward_energy_efficiency'], step_log['reward_healthy'],
             step_log['reward_ctrl'], step_log['reward_contact'],
-            step_log['penalty_backward'], step_log['x_velocity'],
-            step_log['x_position'], step_log['z_position'],
+            step_log['penalty_backward'], step_log['penalty_fall'],
+            step_log['x_velocity'], step_log['x_position'], step_log['z_position'],
             step_log['distance_traveled'], step_log['air_time'],
             step_log['foot_contact'], step_log['timestamp']
         ])
@@ -148,18 +149,18 @@ def parse_args():
     )
     
     parser.add_argument(
-        '--velocity_bonus_weight', type=float, default=50.0,
-        help='Weight for velocity bonus reward (default: 50.0)'
+        '--velocity_bonus_weight', type=float, default=30.0,
+        help='Weight for velocity bonus reward (default: 30.0)'
     )
     
     parser.add_argument(
-        '--air_time_reward_weight', type=float, default=200.0,
-        help='Weight for air time reward (default: 200.0)'
+        '--air_time_reward_weight', type=float, default=50.0,
+        help='Weight for air time reward (default: 50.0)'
     )
     
     parser.add_argument(
-        '--energy_efficiency_weight', type=float, default=10.0,
-        help='Weight for energy efficiency reward (default: 10.0)'
+        '--energy_efficiency_weight', type=float, default=5.0,
+        help='Weight for energy efficiency reward (default: 5.0)'
     )
     
     parser.add_argument(
