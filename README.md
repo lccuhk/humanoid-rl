@@ -1,8 +1,19 @@
 # Humanoid RL - Deep Reinforcement Learning for Robot Locomotion
 
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/pytorch-2.0%2B-orange.svg)](https://pytorch.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<p align="center">
+  <img src="https://img.shields.io/github/stars/lccuhk/humanoid-rl?style=for-the-badge&color=00D9FF" />
+  <img src="https://img.shields.io/github/forks/lccuhk/humanoid-rl?style=for-the-badge&color=00FF88" />
+  <img src="https://img.shields.io/github/issues/lccuhk/humanoid-rl?style=for-the-badge&color=FF6B6B" />
+  <img src="https://img.shields.io/github/license/lccuhk/humanoid-rl?style=for-the-badge&color=FFD93D" />
+  <img src="https://img.shields.io/github/last-commit/lccuhk/humanoid-rl?style=for-the-badge&color=9B59B6" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/RL-PPO%2FSAC%2FTD3-FF6B6B?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Physics-MuJoCo%2FPyBullet-00D9FF?style=for-the-badge" />
+</p>
 
 ## 📋 Project Overview
 
