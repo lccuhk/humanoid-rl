@@ -15,6 +15,12 @@
   <img src="https://img.shields.io/badge/Physics-MuJoCo%2FPyBullet-00D9FF?style=for-the-badge" />
 </p>
 
+## 🖼️ 项目预览
+
+<p align="center">
+  <img src="docs/images/preview.svg" alt="Humanoid RL Preview" width="100%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);" />
+</p>
+
 ## 📋 Project Overview
 
 This project implements deep reinforcement learning algorithms to train a humanoid robot to walk and run naturally. The project supports multiple physics engines (MuJoCo, PyBullet, Isaac Gym) and state-of-the-art RL algorithms (PPO, SAC, TD3).
