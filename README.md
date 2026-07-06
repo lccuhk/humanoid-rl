@@ -383,6 +383,42 @@ After training for 1-5 million timesteps:
 5. Coumans, E., et al. (2019). "PyBullet: A Python Module for Physics Simulation."
 6. Makoviychuk, V., et al. (2021). "Isaac Gym: High Performance GPU-Based Physics Simulation For Robot Learning." RSS.
 
+## 🗺️ 路线图 (Roadmap)
+
+### 短期目标 (v1.3.0)
+- [ ] 支持更多机器人模型（Atlas、Cassie、Unitree A1）
+- [ ] 添加更多训练环境（楼梯、斜坡、障碍物）
+- [ ] 实现 Model-Based RL 算法对比
+- [ ] 添加 Domain Randomization 增强泛化能力
+- [ ] 实现 Sim2Real 迁移工具
+
+### 中期目标 (v1.4.0)
+- [ ] 支持多机器人协同训练
+- [ ] 添加 hierarchical RL 实现
+- [ ] 集成 ROS2 用于真实机器人部署
+- [ ] 实现运动捕捉数据模仿学习
+- [ ] 添加更多任务（推箱子、开门、抓取）
+
+### 长期目标 (v2.0.0)
+- [ ] 实现完整的人形机器人控制（全身运动）
+- [ ] 支持真实硬件部署（Unitree、Boston Dynamics）
+- [ ] 添加视觉感知集成（RGB-D 输入）
+- [ ] 实现多任务学习
+- [ ] 发布可执行的仿真演示应用
+
+### 算法增强
+- [ ] 实现 DreamerV3 模型预测控制
+- [ ] 添加 Transformer-based 策略
+- [ ] 实现 Diffusion Policy
+- [ ] 支持离线 RL 从演示数据学习
+
+### 功能增强
+- [ ] 添加更多物理引擎支持（Webots、Gazebo）
+- [ ] 实现实时 VR 控制接口
+- [ ] 添加运动风格迁移
+- [ ] 支持自定义机器人 URDF 导入
+- [ ] 添加多语言文档（中文、英文、日文）
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
