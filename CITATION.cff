@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this project's code or data, please cite the following."
+title: "Humanoid RL: Deep Reinforcement Learning for Robot Locomotion"
+abstract: "This project implements deep reinforcement learning algorithms to train a humanoid robot to walk and run naturally. Supports multiple physics engines (MuJoCo, PyBullet, Isaac Gym) and state-of-the-art RL algorithms (PPO, SAC, TD3)."
+authors:
+  - family-names: "LU"
+    given-names: "Denis"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Independent Researcher"
+    email: "your.email@example.com"
+version: "1.0.0"
+date-released: "2026-01-01"
+license: MIT
+repository-code: "https://github.com/lccuhk/humanoid-rl"
+url: "https://github.com/lccuhk/humanoid-rl"
+keywords:
+  - "reinforcement-learning"
+  - "deep-learning"
+  - "robotics"
+  - "locomotion"
+  - "humanoid-robot"
+  - "mujoco"
+  - "pybullet"
+  - "ppo"
+  - "sac"
+  - "td3"
+  - "pytorch"
+  - "python"
+preferred-citation:
+  type: software
+  authors:
+    - family-names: "LU"
+      given-names: "Denis"
+  title: "Humanoid RL: Deep Reinforcement Learning Framework for Robot Locomotion"
+  year: "2026"
+  publisher: "GitHub"
+  url: "https://github.com/lccuhk/humanoid-rl"

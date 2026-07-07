@@ -423,6 +423,55 @@ After training for 1-5 million timesteps:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## 🎯 Milestone Planning
+
+We advance project development according to the following milestones:
+
+| Milestone | Status | Goal | Expected Completion |
+|-----------|--------|------|---------------------|
+| **v0.x Stabilization** | 🟡 In Progress | Bug fixes and performance optimization, improve training stability | 2026 Q3 |
+| **Docs & Onboarding** | ⚪ To Do | Improve documentation and examples, lower barrier to entry | 2026 Q3 |
+| **Public Release** | ⚪ To Do | Public release and promotion, community building | 2026 Q4 |
+
+### Milestone Details
+
+#### v0.x Stabilization
+- [ ] Fix memory leak issues during training
+- [ ] Optimize model convergence speed
+- [ ] Improve inference performance by 20%+
+- [ ] Improve unit test coverage to 80%
+
+#### Docs & Onboarding
+- [ ] Add detailed API documentation
+- [ ] Create getting started tutorials and best practice guides
+- [ ] Provide more pre-trained model downloads
+- [ ] Add video demonstrations and use cases
+
+#### Public Release
+- [ ] Release v1.0 official version
+- [ ] Write project introduction blog
+- [ ] Submit to relevant open source communities
+- [ ] Build contributor community
+
+## 📋 Project Management
+
+We use GitHub Projects for kanban-style management:
+
+### Workflow
+```
+📥 To Do → 🔄 In Progress → ✅ Done → 🚀 Released
+```
+
+### Board Status
+- **📥 To Do** - Pending Issues and PRs
+- **🔄 In Progress** - Tasks under development
+- **✅ Done** - Completed tasks awaiting merge
+- **🚀 Released** - Published to official version
+
+### Related Links
+- [📊 Project Board](https://github.com/users/lccuhk/projects) - View all project progress
+- [📝 Milestones](https://github.com/lccuhk/humanoid-rl/milestones) - View milestone details
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
