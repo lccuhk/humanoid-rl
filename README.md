@@ -169,6 +169,9 @@ python examples/plot_training_comparison.py
 
 ### 网络架构
 
+不同算法采用不同的网络结构，以适配各自的训练特性：
+
+**PPO（三层 256）**
 ```
 Actor (策略网络):          Critic (价值网络):
   Input (obs_dim)            Input (obs_dim)
@@ -178,6 +181,30 @@ Actor (策略网络):          Critic (价值网络):
   Linear(256) + Tanh         Linear(256) + Tanh
        ↓                           ↓
   Linear(256) + Tanh         Linear(256) + Tanh
+       ↓                           ↓
+  Linear(act_dim) + Tanh     Linear(1)
+```
+
+**SAC（两层 256，双 Q 网络）**
+```
+Actor (策略网络):          Critic (Q1 / Q2 网络):
+  Input (obs_dim + act_dim)    Input (obs_dim)
+       ↓                           ↓
+  Linear(256) + ReLU         Linear(256) + ReLU
+       ↓                           ↓
+  Linear(256) + ReLU         Linear(256) + ReLU
+       ↓                           ↓
+  Linear(act_dim)            Linear(1)
+```
+
+**TD3（两层 400+300，双 Q 网络）**
+```
+Actor (策略网络):          Critic (Q1 / Q2 网络):
+  Input (obs_dim)            Input (obs_dim + act_dim)
+       ↓                           ↓
+  Linear(400) + ReLU         Linear(400) + ReLU
+       ↓                           ↓
+  Linear(300) + ReLU         Linear(300) + ReLU
        ↓                           ↓
   Linear(act_dim) + Tanh     Linear(1)
 ```

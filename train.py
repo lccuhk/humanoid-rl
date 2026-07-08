@@ -92,25 +92,69 @@ def parse_args():
         '--verbose', type=int, default=1,
         help='Verbosity level (default: 1)'
     )
-    
+
+    # Reward shaping parameters
+    parser.add_argument(
+        '--forward_reward_weight', type=float, default=None,
+        help='Weight for forward velocity reward (default: env default)'
+    )
+
+    parser.add_argument(
+        '--ctrl_cost_weight', type=float, default=None,
+        help='Weight for control cost penalty (default: env default)'
+    )
+
+    parser.add_argument(
+        '--healthy_reward_weight', type=float, default=None,
+        help='Weight for healthy/upright reward (default: env default)'
+    )
+
+    parser.add_argument(
+        '--shoulder_ctrl_weight', type=float, default=None,
+        help='Weight for shoulder control cost penalty (default: 0.0, disabled)'
+    )
+
     return parser.parse_args()
+
+
+def _build_reward_kwargs(args):
+    """Build reward shaping kwargs from command line args (only pass non-None values)."""
+    kwargs = {}
+    if args.forward_reward_weight is not None:
+        kwargs['forward_reward_weight'] = args.forward_reward_weight
+    if args.ctrl_cost_weight is not None:
+        kwargs['ctrl_cost_weight'] = args.ctrl_cost_weight
+    if args.healthy_reward_weight is not None:
+        # MuJoCo uses 'healthy_reward', PyBullet uses 'healthy_reward_weight'
+        kwargs['healthy_reward'] = args.healthy_reward_weight
+        kwargs['healthy_reward_weight'] = args.healthy_reward_weight
+    if args.shoulder_ctrl_weight is not None:
+        kwargs['shoulder_ctrl_cost_weight'] = args.shoulder_ctrl_weight
+    return kwargs
 
 
 def create_environment(args):
     """Create the training environment."""
     render_mode = 'human' if args.render else None
-    
+    reward_kwargs = _build_reward_kwargs(args)
+
     if args.env == 'mujoco':
         print(f"Creating MuJoCo environment for {args.task} task...")
         env = HumanoidMuJoCoEnv(
             render_mode=render_mode,
             task=args.task,
+            **{k: v for k, v in reward_kwargs.items()
+               if k in ['forward_reward_weight', 'ctrl_cost_weight',
+                        'healthy_reward', 'shoulder_ctrl_cost_weight']},
         )
     elif args.env == 'pybullet':
         print(f"Creating PyBullet environment for {args.task} task...")
         env = HumanoidPyBulletEnv(
             render_mode=render_mode,
             task=args.task,
+            **{k: v for k, v in reward_kwargs.items()
+               if k in ['forward_reward_weight', 'ctrl_cost_weight',
+                        'healthy_reward_weight']},
         )
     elif args.env == 'isaacgym':
         print(f"Creating Isaac Gym environment for {args.task} task...")
