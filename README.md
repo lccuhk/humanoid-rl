@@ -25,7 +25,7 @@
 - **多物理引擎抽象**：MuJoCo、PyBullet、Isaac Gym 三种环境统一接口，便于跨平台验证（主力实验基于 MuJoCo）
 - **完整的实验体系**：训练日志、评估指标、奖励消融实验、可视化工具链齐全
 - **奖励工程探索**：系统对比了健康度奖励、肩关节约束、控制成本等不同奖励组件的影响
-- **可视化工具链**：训练曲线、步态分析、关节轨迹、机器人状态 Dashboard 一应俱全
+- **可视化工具链**：训练曲线、步态分析、关节轨迹、速度剖面等多维度可视化
 - **可扩展架构**：环境-算法-数据-可视化分层设计，便于新增算法和场景
 
 ---
@@ -37,19 +37,24 @@ humanoid-rl/
 ├── train.py                    # 统一训练入口
 ├── src/
 │   ├── environments/           # 仿真环境封装
-│   │   ├── mujoco_env.py       # MuJoCo Humanoid-v5
-│   │   ├── pybullet_env.py     # PyBullet 环境
-│   │   └── isaac_gym_env.py    # Isaac Gym GPU 加速
+│   │   ├── mujoco_env.py       # MuJoCo Humanoid-v5（主力）
+│   │   ├── pybullet_env.py     # PyBullet 环境（备选）
+│   │   └── isaac_gym_env.py    # Isaac Gym（实验性）
 │   ├── agents/                 # RL 算法实现
 │   │   ├── ppo_agent.py        # Proximal Policy Optimization
 │   │   ├── sac_agent.py        # Soft Actor-Critic
 │   │   └── td3_agent.py        # Twin Delayed DDPG
 │   ├── data_processing/        # 数据采集与预处理
-│   ├── visualization/          # 训练与机器人状态可视化
-│   └── deployment/             # Web UI 与模型服务
-├── examples/                   # 示例脚本
+│   │   ├── data_collector.py   # 训练数据采集
+│   │   ├── data_preprocessor.py # 数据标准化与异常值处理
+│   │   └── feature_extractor.py # 步态/平衡/接触特征提取
+│   └── visualization/          # 训练与机器人状态可视化
+│       ├── training_visualizer.py # 训练曲线绘制
+│       ├── robot_visualizer.py    # 关节轨迹/步态分析
+│       └── video_recorder.py      # 演示视频录制
+├── examples/                   # 示例脚本（训练/评估/绘图）
 ├── tests/                      # 单元测试
-└── docs/                       # 文档
+└── docs/                       # 文档与图片资源
 ```
 
 ---
@@ -288,6 +293,92 @@ Actor (策略网络):          Critic (Q1 / Q2 网络):
 5. Brockman, G., et al. (2016). *OpenAI Gym*. arXiv:1606.01540.
 
 ---
+
+## 🗺️ Roadmap
+
+### Short-term Goals (v1.2.0)
+- [ ] Implement more RL algorithms (A2C, DDPG, TRPO)
+- [ ] Add more humanoid robot models
+- [ ] Implement curriculum learning for better convergence
+- [ ] Add WandB training visualization integration
+- [ ] Support multi-environment parallel training
+
+### Mid-term Goals (v1.3.0)
+- [ ] Implement hierarchical reinforcement learning
+- [ ] Add imitation learning from motion capture data
+- [ ] Support domain randomization for sim-to-real transfer
+- [ ] Add more complex terrain environments
+- [ ] Implement model-based RL algorithms
+
+### Long-term Goals (v2.0.0)
+- [ ] Achieve robust locomotion on uneven terrain
+- [ ] Implement full-body manipulation skills
+- [ ] Support real robot deployment (Unitree, Boston Dynamics)
+- [ ] Add multi-agent collaboration
+- [ ] Publish benchmark results and evaluation suite
+
+### Algorithm Optimization
+- [ ] Improve reward function design
+- [ ] Implement distributed training framework
+- [ ] Add model compression and quantization
+- [ ] Implement offline RL from existing datasets
+- [ ] Add safety constraints and RLHF
+
+### Feature Enhancement
+- [ ] Add more physics engine support (Isaac Sim, Drake)
+- [ ] Implement training result analysis tools
+- [ ] Add hyperparameter auto-tuning
+- [ ] Support custom robot model import
+- [ ] Add multi-language documentation (English, Chinese, Japanese)
+
+## 🎯 Milestone Planning
+
+We advance project development according to the following milestones:
+
+| Milestone | Status | Goal | Expected Completion |
+|-----------|--------|------|---------------------|
+| **v0.x Stabilization** | 🟡 In Progress | Bug fixes and performance optimization, improve training stability | 2026 Q3 |
+| **Docs & Onboarding** | ⚪ To Do | Improve documentation and examples, lower barrier to entry | 2026 Q3 |
+| **Public Release** | ⚪ To Do | Public release and promotion, community building | 2026 Q4 |
+
+### Milestone Details
+
+#### v0.x Stabilization
+- [ ] Fix memory leak issues during training
+- [ ] Optimize model convergence speed
+- [ ] Improve inference performance by 20%+
+- [ ] Improve unit test coverage to 80%
+
+#### Docs & Onboarding
+- [ ] Add detailed API documentation
+- [ ] Create getting started tutorials and best practice guides
+- [ ] Provide more pre-trained model downloads
+- [ ] Add video demonstrations and use cases
+
+#### Public Release
+- [ ] Release v1.0 official version
+- [ ] Write project introduction blog
+- [ ] Submit to relevant open source communities
+- [ ] Build contributor community
+
+## 📋 Project Management
+
+We use GitHub Projects for kanban-style management:
+
+### Workflow
+```
+📥 To Do → 🔄 In Progress → ✅ Done → 🚀 Released
+```
+
+### Board Status
+- **📥 To Do** - Pending Issues and PRs
+- **🔄 In Progress** - Tasks under development
+- **✅ Done** - Completed tasks awaiting merge
+- **🚀 Released** - Published to official version
+
+### Related Links
+- [📊 Project Board](https://github.com/users/lccuhk/projects) - View all project progress
+- [📝 Milestones](https://github.com/lccuhk/humanoid-rl/milestones) - View milestone details
 
 ## 📄 License
 
