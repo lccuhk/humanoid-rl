@@ -139,11 +139,11 @@ python examples/plot_training_comparison.py
 
 | 训练进度对比 | 奖励组成分析 |
 |:---:|:---:|
-| ![Training Progress](logs/comparison/optimized_training_progress_final_20260531_222742.png) | ![Reward Components](logs/comparison/reward_components_comparison.png) |
+| ![Training Progress](docs/images/training_progress_comparison.png) | ![Reward Components](docs/images/reward_components_comparison.png) |
 
 | 步态分析 | 速度曲线 |
 |:---:|:---:|
-| ![Gait Analysis](logs/evaluation/gait_analysis.png) | ![Velocity Profile](logs/evaluation/velocity_profile.png) |
+| ![Gait Analysis](docs/images/gait_analysis.png) | ![Velocity Profile](docs/images/velocity_profile.png) |
 
 ---
 
