@@ -8,6 +8,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/lccuhk/humanoid-rl">
+    <img src="https://img.shields.io/badge/📂_View_Source-GitHub-00D9FF?style=for-the-badge" />
+  </a>
+</p>
+
+<p align="center">
   <img src="docs/images/preview.svg" alt="Project Preview" width="90%" style="border-radius: 10px;" />
 </p>
 
