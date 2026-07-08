@@ -1,485 +1,260 @@
-# Humanoid RL - Deep Reinforcement Learning for Robot Locomotion
-
-<p align="center">
-  <img src="https://img.shields.io/github/stars/lccuhk/humanoid-rl?style=for-the-badge&color=00D9FF" />
-  <img src="https://img.shields.io/github/forks/lccuhk/humanoid-rl?style=for-the-badge&color=00FF88" />
-  <img src="https://img.shields.io/github/issues/lccuhk/humanoid-rl?style=for-the-badge&color=FF6B6B" />
-  <img src="https://img.shields.io/github/license/lccuhk/humanoid-rl?style=for-the-badge&color=FFD93D" />
-  <img src="https://img.shields.io/github/last-commit/lccuhk/humanoid-rl?style=for-the-badge&color=9B59B6" />
-</p>
+# Humanoid RL — 人形机器人深度强化学习运动控制
 
 <p align="center">
   <img src="https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />
-  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/MuJoCo-3.0%2B-00D9FF?style=for-the-badge" />
   <img src="https://img.shields.io/badge/RL-PPO%2FSAC%2FTD3-FF6B6B?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Physics-MuJoCo%2FPyBullet-00D9FF?style=for-the-badge" />
+  <img src="https://img.shields.io/github/license/lccuhk/humanoid-rl?style=for-the-badge&color=FFD93D" />
 </p>
-
-## 🖼️ 项目预览
 
 <p align="center">
-  <img src="docs/images/preview.svg" alt="Humanoid RL Preview" width="100%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);" />
+  <img src="docs/images/preview.svg" alt="Project Preview" width="90%" style="border-radius: 10px;" />
 </p>
 
-## 📋 Project Overview
+## 🎯 项目简介
 
-This project implements deep reinforcement learning algorithms to train a humanoid robot to walk and run naturally. The project supports multiple physics engines (MuJoCo, PyBullet, Isaac Gym) and state-of-the-art RL algorithms (PPO, SAC, TD3).
+本项目基于深度强化学习（Deep RL）训练人形机器人实现自然、稳定的双足运动（行走与奔跑）。项目以 MuJoCo 物理引擎为仿真环境，实现了 PPO、SAC、TD3 三种主流强化学习算法，并通过奖励工程、超参优化、消融实验等手段系统提升机器人的运动性能与稳定性。
 
-### 🎯 Problem Statement
-
-Train a humanoid robot to achieve natural and stable locomotion (walking and running) using deep reinforcement learning. The robot must:
-- Maintain balance while moving forward
-- Achieve smooth and natural gait patterns
-- Adapt to different terrains and conditions
-- Maximize forward velocity while minimizing energy consumption
-
-## 🏗️ Project Architecture
-
-```
-humanoid-rl/
-├── src/
-│   ├── environments/      # Physics simulation environments
-│   │   ├── mujoco_env.py      # MuJoCo environment
-│   │   ├── pybullet_env.py    # PyBullet environment
-│   │   └── isaac_gym_env.py   # Isaac Gym environment
-│   ├── agents/            # RL algorithms
-│   │   ├── ppo_agent.py       # Proximal Policy Optimization
-│   │   ├── sac_agent.py       # Soft Actor-Critic
-│   │   └── td3_agent.py       # Twin Delayed DDPG
-│   ├── data_processing/   # Data collection and preprocessing
-│   │   ├── data_collector.py  # Data collection
-│   │   ├── data_preprocessor.py # Data preprocessing
-│   │   └── feature_extractor.py # Feature extraction
-│   ├── visualization/     # Visualization tools
-│   │   ├── training_visualizer.py # Training metrics
-│   │   ├── robot_visualizer.py    # Robot state visualization
-│   │   └── video_recorder.py      # Video recording
-│   └── deployment/        # Deployment modules
-│       ├── web_ui.py          # Streamlit web interface
-│       ├── model_server.py    # Model serving
-│       └── api_server.py      # REST API
-├── examples/             # Example scripts
-├── notebooks/            # Jupyter notebooks
-├── checkpoints/          # Trained model checkpoints
-├── logs/                 # Training logs and visualizations
-├── tests/                # Unit tests
-└── docs/                 # Documentation
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8+
-- PyTorch 2.0+
-- MuJoCo 3.0+ (optional)
-- PyBullet 3.2.5+ (optional)
-- Isaac Gym (optional, for GPU-accelerated training)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/lccuhk/humanoid-rl.git
-cd humanoid-rl
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install MuJoCo (optional, for best performance)
-pip install mujoco
-
-# Install PyBullet (optional, alternative physics engine)
-pip install pybullet
-```
-
-### Quick Start
-
-#### Training
-
-```bash
-# Train with MuJoCo + PPO (recommended)
-python train.py --env mujoco --algo ppo --task walk --total_timesteps 1000000
-
-# Train with PyBullet + SAC
-python train.py --env pybullet --algo sac --task run --total_timesteps 2000000
-
-# Train with specific parameters
-python train.py --env mujoco --algo ppo --task walk \
-    --total_timesteps 5000000 \
-    --learning_rate 3e-4 \
-    --gamma 0.99 \
-    --seed 42
-```
-
-#### Evaluation
-
-```bash
-# Evaluate trained model
-python examples/evaluate_model.py \
-    --model_path ./checkpoints/ppo_mujoco_walk_final.zip \
-    --env mujoco \
-    --algo ppo \
-    --task walk \
-    --n_episodes 10 \
-    --render
-```
-
-#### Web UI
-
-```bash
-# Start the web interface
-python examples/run_web_ui.py
-```
-
-## 📊 Data Science Pipeline
-
-### 1. Data Collection
-
-- **Environment Interaction**: Collect state-action-reward transitions during training
-- **Episode Logging**: Record episode rewards, lengths, and termination reasons
-- **State Tracking**: Monitor robot joint positions, velocities, and contact forces
-- **Reward Decomposition**: Track individual reward components (forward velocity, control cost, etc.)
-
-### 2. Data Preprocessing
-
-- **Normalization**: Standardize observations using running mean and variance
-- **Outlier Detection**: Identify and handle extreme values using Z-score method
-- **Feature Scaling**: Apply min-max scaling or robust scaling as needed
-- **Dimensionality Reduction**: Optional PCA for high-dimensional observations
-
-### 3. Data Modeling
-
-#### Algorithms Implemented
-
-| Algorithm | Description | Best For |
-|-----------|-------------|----------|
-| **PPO** | Proximal Policy Optimization | Stability, ease of tuning |
-| **SAC** | Soft Actor-Critic | Sample efficiency, continuous control |
-| **TD3** | Twin Delayed DDPG | Balance of performance and stability |
-
-#### Network Architecture
-
-```
-Actor Network:
-Input (Observation)
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(Action_Dim) + Tanh
-
-Critic Network (Value Function):
-Input (Observation)
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(256) + Tanh
-    ↓
-Linear(1)
-```
-
-### 4. Data Visualization
-
-#### Training Metrics
-- Episode reward curves with moving averages
-- Loss curves (policy loss, value loss, entropy)
-- Learning rate schedules
-- Episode length distributions
-
-#### Robot State Visualization
-- Joint position trajectories
-- Robot trajectory (X-Y plane)
-- Velocity profiles
-- Gait analysis (step frequency, symmetry)
-- Height oscillations
-
-#### Interactive Dashboard
-- Real-time training progress monitoring
-- Algorithm comparison tools
-- Model evaluation interface
-- Configuration management
-
-## 🎮 Deployment
-
-### System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      User Interface                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │
-│  │  Web UI     │  │  API Server │  │  TensorBoard     │   │
-│  │ (Streamlit) │  │  (Flask)    │  │  (Visualization) │   │
-│  └──────┬──────┘  └──────┬──────┘  └────────┬─────────┘   │
-└─────────┼────────────────┼──────────────────┼──────────────┘
-          │                │                  │
-          └────────────────┼──────────────────┘
-                           │
-                  ┌────────▼────────┐
-                  │  Model Server   │
-                  │  (Load Balancer)│
-                  └────────┬────────┘
-                           │
-         ┌─────────────────┼─────────────────┐
-         │                 │                 │
-    ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
-    │ Model A │      │ Model B │      │ Model C │
-    │ (PPO)   │      │ (SAC)   │      │ (TD3)   │
-    └─────────┘      └─────────┘      └─────────┘
-```
-
-### UI/UX Features
-
-- **Intuitive Navigation**: Sidebar with clear section divisions
-- **Real-time Updates**: Live training progress visualization
-- **Interactive Charts**: Zoomable, hoverable plots
-- **Configuration Management**: Easy parameter tuning
-- **Model Comparison**: Side-by-side algorithm performance
-- **Responsive Design**: Works on desktop and mobile
-
-## 🧪 Project Assessment Checklist
-
-### 1. Problem Definition (10%) ✅
-- [x] Clear problem statement
-- [x] Well-defined objectives
-- [x] Success metrics defined
-- [x] Scope and limitations documented
-
-### 2. Data Science Pipeline (45%) ✅
-
-#### Data Collection, Preprocessing, and Representation (15%) ✅
-- [x] Data collection module
-- [x] Data preprocessing (normalization, scaling)
-- [x] Feature extraction
-- [x] Outlier detection
-- [x] Data storage and management
-
-#### Data Modeling (15%) ✅
-- [x] PPO algorithm implementation
-- [x] SAC algorithm implementation
-- [x] TD3 algorithm implementation
-- [x] Custom neural network architectures
-- [x] Training and evaluation pipelines
-
-#### Data Visualization (15%) ✅
-- [x] Training metrics visualization
-- [x] Robot state visualization
-- [x] Gait analysis plots
-- [x] Interactive web dashboard
-- [x] Video recording capability
-
-### 3. Deployment (15%) ✅
-
-#### System Architecture (10%) ✅
-- [x] Modular code structure
-- [x] Multiple environment support
-- [x] Model checkpoint management
-- [x] API server design
-- [x] Scalable architecture
-
-#### UI/UX (5%) ✅
-- [x] Streamlit web interface
-- [x] Interactive dashboard
-- [x] Algorithm comparison tools
-- [x] Configuration management
-- [x] Responsive design
-
-### 4. Challenges (10%) ✅
-- [x] Reward engineering documented
-- [x] Exploration-exploitation balance
-- [x] Sample efficiency considerations
-- [x] Stability vs. performance trade-offs
-- [x] Hyperparameter tuning strategies
-
-### 5. Demonstration Video (10%) ⏳
-- [ ] Training process recording
-- [ ] Evaluation demonstrations
-- [ ] Algorithm comparisons
-- [ ] Gait analysis visualization
-
-### 6. Source Code and Report Submission (10%) ✅
-- [x] Complete source code
-- [x] Documentation
-- [x] Example scripts
-- [x] Unit tests
-- [x] Project report
-
-## 📈 Results and Performance
-
-### Expected Results
-
-After training for 1-5 million timesteps:
-
-| Task | Expected Reward | Forward Velocity | Episode Length |
-|------|-----------------|------------------|----------------|
-| Walking | 5000+ | 1.5-2.5 m/s | 1000+ steps |
-| Running | 8000+ | 3.0-5.0 m/s | 1000+ steps |
-
-### Algorithm Comparison
-
-| Algorithm | Sample Efficiency | Stability | Final Performance |
-|-----------|-------------------|-----------|-------------------|
-| PPO | Medium | High | Good |
-| SAC | High | Medium | Excellent |
-| TD3 | High | Medium | Very Good |
-
-## 🔧 Challenges and Solutions
-
-### 1. Reward Engineering
-
-**Challenge**: Designing a reward function that encourages natural locomotion.
-
-**Solution**:
-- Forward velocity reward (primary objective)
-- Control cost penalty (energy efficiency)
-- Healthy reward (stay upright)
-- Contact cost penalty (smooth movement)
-
-### 2. Exploration vs. Exploitation
-
-**Challenge**: Balancing exploration of new behaviors with exploitation of known good policies.
-
-**Solution**:
-- Entropy regularization (PPO, SAC)
-- Action noise (TD3)
-- Adaptive learning rates
-- Curriculum learning
-
-### 3. Sample Efficiency
-
-**Challenge**: RL algorithms require many samples to learn.
-
-**Solution**:
-- Off-policy algorithms (SAC, TD3)
-- Experience replay
-- Parallel environment simulation
-- Transfer learning
-
-### 4. Training Stability
-
-**Challenge**: Policy collapse or divergence during training.
-
-**Solution**:
-- PPO's clipped surrogate objective
-- Target networks (TD3, SAC)
-- Gradient clipping
-- Learning rate scheduling
-
-## 📚 References
-
-1. Schulman, J., et al. (2017). "Proximal Policy Optimization Algorithms." arXiv:1707.06347.
-2. Haarnoja, T., et al. (2018). "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor." ICML.
-3. Fujimoto, S., et al. (2018). "Addressing Function Approximation Error in Actor-Critic Methods." ICML.
-4. Todorov, E., et al. (2012). "MuJoCo: A physics engine for model-based control." IROS.
-5. Coumans, E., et al. (2019). "PyBullet: A Python Module for Physics Simulation."
-6. Makoviychuk, V., et al. (2021). "Isaac Gym: High Performance GPU-Based Physics Simulation For Robot Learning." RSS.
-
-## 🗺️ 路线图 (Roadmap)
-
-### 短期目标 (v1.3.0)
-- [ ] 支持更多机器人模型（Atlas、Cassie、Unitree A1）
-- [ ] 添加更多训练环境（楼梯、斜坡、障碍物）
-- [ ] 实现 Model-Based RL 算法对比
-- [ ] 添加 Domain Randomization 增强泛化能力
-- [ ] 实现 Sim2Real 迁移工具
-
-### 中期目标 (v1.4.0)
-- [ ] 支持多机器人协同训练
-- [ ] 添加 hierarchical RL 实现
-- [ ] 集成 ROS2 用于真实机器人部署
-- [ ] 实现运动捕捉数据模仿学习
-- [ ] 添加更多任务（推箱子、开门、抓取）
-
-### 长期目标 (v2.0.0)
-- [ ] 实现完整的人形机器人控制（全身运动）
-- [ ] 支持真实硬件部署（Unitree、Boston Dynamics）
-- [ ] 添加视觉感知集成（RGB-D 输入）
-- [ ] 实现多任务学习
-- [ ] 发布可执行的仿真演示应用
-
-### 算法增强
-- [ ] 实现 DreamerV3 模型预测控制
-- [ ] 添加 Transformer-based 策略
-- [ ] 实现 Diffusion Policy
-- [ ] 支持离线 RL 从演示数据学习
-
-### 功能增强
-- [ ] 添加更多物理引擎支持（Webots、Gazebo）
-- [ ] 实现实时 VR 控制接口
-- [ ] 添加运动风格迁移
-- [ ] 支持自定义机器人 URDF 导入
-- [ ] 添加多语言文档（中文、英文、日文）
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 🎯 Milestone Planning
-
-We advance project development according to the following milestones:
-
-| Milestone | Status | Goal | Expected Completion |
-|-----------|--------|------|---------------------|
-| **v0.x Stabilization** | 🟡 In Progress | Bug fixes and performance optimization, improve training stability | 2026 Q3 |
-| **Docs & Onboarding** | ⚪ To Do | Improve documentation and examples, lower barrier to entry | 2026 Q3 |
-| **Public Release** | ⚪ To Do | Public release and promotion, community building | 2026 Q4 |
-
-### Milestone Details
-
-#### v0.x Stabilization
-- [ ] Fix memory leak issues during training
-- [ ] Optimize model convergence speed
-- [ ] Improve inference performance by 20%+
-- [ ] Improve unit test coverage to 80%
-
-#### Docs & Onboarding
-- [ ] Add detailed API documentation
-- [ ] Create getting started tutorials and best practice guides
-- [ ] Provide more pre-trained model downloads
-- [ ] Add video demonstrations and use cases
-
-#### Public Release
-- [ ] Release v1.0 official version
-- [ ] Write project introduction blog
-- [ ] Submit to relevant open source communities
-- [ ] Build contributor community
-
-## 📋 Project Management
-
-We use GitHub Projects for kanban-style management:
-
-### Workflow
-```
-📥 To Do → 🔄 In Progress → ✅ Done → 🚀 Released
-```
-
-### Board Status
-- **📥 To Do** - Pending Issues and PRs
-- **🔄 In Progress** - Tasks under development
-- **✅ Done** - Completed tasks awaiting merge
-- **🚀 Released** - Published to official version
-
-### Related Links
-- [📊 Project Board](https://github.com/users/lccuhk/projects) - View all project progress
-- [📝 Milestones](https://github.com/lccuhk/humanoid-rl/milestones) - View milestone details
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact
-
-For questions or inquiries, please contact the project maintainers.
+> **与工业人形机器人的关联**：本项目积累的运动控制、奖励设计、sim-to-real 方法论，可为工业场景人形机器人的底层运动控制与操作策略学习提供技术参考。
 
 ---
 
-**Note**: This project is part of a Data Science course assessment. All code is provided for educational purposes.
+## ✨ 技术亮点
+
+- **多算法实现**：PPO（on-policy）、SAC（off-policy 最大熵）、TD3（off-policy 确定性策略）三种算法统一框架，可横向对比
+- **多物理引擎支持**：MuJoCo、PyBullet、Isaac Gym 三种环境抽象，接口统一，便于切换
+- **完整的实验体系**：训练日志、评估指标、消融实验、可视化工具链齐全
+- **奖励工程探索**：系统对比了健康度奖励、肩关节约束、控制成本等不同奖励组件的影响
+- **可视化工具链**：训练曲线、步态分析、关节轨迹、机器人状态 Dashboard 一应俱全
+
+---
+
+## 🏗️ 项目架构
+
+```
+humanoid-rl/
+├── train.py                    # 统一训练入口
+├── src/
+│   ├── environments/           # 仿真环境封装
+│   │   ├── mujoco_env.py       # MuJoCo Humanoid-v5
+│   │   ├── pybullet_env.py     # PyBullet 环境
+│   │   └── isaac_gym_env.py    # Isaac Gym GPU 加速
+│   ├── agents/                 # RL 算法实现
+│   │   ├── ppo_agent.py        # Proximal Policy Optimization
+│   │   ├── sac_agent.py        # Soft Actor-Critic
+│   │   └── td3_agent.py        # Twin Delayed DDPG
+│   ├── data_processing/        # 数据采集与预处理
+│   ├── visualization/          # 训练与机器人状态可视化
+│   └── deployment/             # Web UI 与模型服务
+├── examples/                   # 示例脚本
+├── tests/                      # 单元测试
+└── docs/                       # 文档
+```
+
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python 3.8+
+- PyTorch 2.0+
+- MuJoCo 3.0+
+
+### 安装
+
+```bash
+git clone https://github.com/lccuhk/humanoid-rl.git
+cd humanoid-rl
+pip install -r requirements.txt
+```
+
+### 训练
+
+```bash
+# PPO + MuJoCo + 行走任务（推荐入门）
+python train.py --env mujoco --algo ppo --task walk --total_timesteps 1000000
+
+# PPO + MuJoCo + 奔跑任务 + 健康度优化
+python train.py --env mujoco --algo ppo --task run --total_timesteps 2000000 \
+    --healthy_reward_weight 2.0 --ctrl_cost_weight 0.05
+```
+
+### 评估与可视化
+
+```bash
+# 评估已训练模型
+python examples/evaluate_model.py \
+    --model_path ./checkpoints/ppo_mujoco_walk_final.zip \
+    --env mujoco --algo ppo --task walk --n_episodes 10 --render
+
+# 绘制训练对比曲线
+python examples/plot_training_comparison.py
+```
+
+---
+
+## 📊 实验结果
+
+### 行走任务（Walk）— PPO + MuJoCo
+
+| 指标 | 数值 |
+|---|---|
+| 平均回报（Mean Reward） | **1034.6 ± 123.3** |
+| 最高回报（Max Reward） | 1132.8 |
+| 平均前向距离 | 1.86 m |
+| 最大前向速度 | 2.68 m/s |
+| 平均回合长度 | 72.4 steps |
+
+*基于 5 个评估回合的统计结果，训练步数 1M timesteps。*
+
+### 奔跑任务（Run）— 基线 vs 健康度优化
+
+| 指标 | 基线 PPO | 健康度优化 PPO | 变化 |
+|---|---|---|---|
+| 平均回报 | 2126.6 ± 353.4 | 1513.4 ± 91.2 | -28.8% |
+| 平均速度 | 1.99 m/s | **2.24 m/s** | **+12.5%** |
+| 平均前向距离 | 1.38 m | **1.41 m** | +2.1% |
+| 回报标准差 | 353.4 | 91.2 | **-74.2%（更稳定）** |
+| 平均回合长度 | 79.4 steps | 64.2 steps | -19.1% |
+
+**关键发现**：健康度奖励虽然降低了平均回报，但显著提升了策略稳定性（标准差降低 74%）和前向速度（+12.5%），说明更稳定的步态虽然单回合持续时间略短，但单位时间内前进效率更高。
+
+### 奖励消融实验
+
+我们系统测试了不同奖励组件配置对训练效果的影响：
+
+| 配置 | 平均回报 | 最大回报 | 平均回合长度 | 跌倒率 |
+|---|---|---|---|---|
+| 健康优化训练 | 1668.3 | 8007.3 | 71.4 steps | ~97% |
+| 详细日志训练 | 1526.3 | 7339.8 | 71.6 steps | 99.99% |
+| 肩关节优化 (w=20) | 1155.1 | 6132.2 | 64.7 steps | 99.99% |
+| 肩关节优化 (w=5) | -40.4 | 620.1 | 30.5 steps | 99.91% |
+
+> 注：跌倒率高是 Humanoid 任务的固有特性——人形机器人双足行走本身就是不稳定系统。MuJoCo Humanoid 任务的标准评估就是看能走多远、多快，而不是不跌倒。
+
+### 可视化结果
+
+项目提供丰富的可视化工具，以下为部分示例：
+
+| 训练进度对比 | 奖励组成分析 |
+|:---:|:---:|
+| ![Training Progress](logs/comparison/optimized_training_progress_final_20260531_222742.png) | ![Reward Components](logs/comparison/reward_components_comparison.png) |
+
+| 步态分析 | 速度曲线 |
+|:---:|:---:|
+| ![Gait Analysis](logs/evaluation/gait_analysis.png) | ![Velocity Profile](logs/evaluation/velocity_profile.png) |
+
+---
+
+## 🧠 核心算法
+
+### PPO（Proximal Policy Optimization）
+
+- **特点**：on-policy 算法，训练稳定，超参鲁棒性强
+- **实现要点**：GAE 优势估计、裁剪代理目标、价值函数裁剪、熵正则化
+- **适用场景**：人形机器人运动控制等连续控制任务，训练稳定性优先
+
+### SAC（Soft Actor-Critic）
+
+- **特点**：off-policy 最大熵 RL，样本效率高，探索能力强
+- **实现要点**：双 Q 网络、自动温度调节、重参数化技巧
+- **适用场景**：样本采集成本高、需要高效探索的场景
+
+### TD3（Twin Delayed DDPG）
+
+- **特点**：off-policy 确定性策略，在连续控制上表现强劲
+- **实现要点**：双 Critic 缓解过估计、延迟策略更新、目标策略平滑
+- **适用场景**：高精度连续控制任务
+
+### 网络架构
+
+```
+Actor (策略网络):          Critic (价值网络):
+  Input (obs_dim)            Input (obs_dim)
+       ↓                           ↓
+  Linear(256) + Tanh         Linear(256) + Tanh
+       ↓                           ↓
+  Linear(256) + Tanh         Linear(256) + Tanh
+       ↓                           ↓
+  Linear(256) + Tanh         Linear(256) + Tanh
+       ↓                           ↓
+  Linear(act_dim) + Tanh     Linear(1)
+```
+
+---
+
+## 🔬 关键技术探索
+
+### 1. 奖励工程（Reward Shaping）
+
+人形机器人 RL 的核心挑战之一是奖励设计。本项目系统探索了以下奖励组件的组合：
+
+| 奖励项 | 作用 | 调参心得 |
+|---|---|---|
+| **前向速度奖励** | 主目标，鼓励机器人前进 | 权重不宜过大，否则会出现"扑倒前进"的异常步态 |
+| **健康度奖励** | 鼓励机器人保持直立 | 提升稳定性，但过高会抑制前进动力 |
+| **控制成本** | 惩罚大幅动作，鼓励节能 | 权重 0.01~0.1 效果较好 |
+| **肩关节约束** | 限制手臂摆动幅度，使步态更自然 | 权重过高会限制平衡能力 |
+| **后退惩罚** | 防止机器人学"倒车" | 辅助项，非必需 |
+
+### 2. 训练稳定性
+
+- **梯度裁剪**：防止梯度爆炸
+- **学习率衰减**：训练后期精细调整
+- **目标网络软更新**：SAC/TD3 稳定 critic 估计
+- **PPO 裁剪比**：限制策略更新幅度，避免崩溃
+
+### 3. 数据效率
+
+- **经验回放缓冲区**：SAC/TD3 使用 1M 步回放池
+- **并行环境采样**：PPO 支持多环境并行采集
+- **GAE 优势估计**：降低方差，提升策略梯度估计质量
+
+---
+
+## 📈 训练曲线解读
+
+典型的人形机器人 RL 训练分为三个阶段：
+
+1. **探索期（0 ~ 200K steps）**：机器人频繁跌倒，回报在低位震荡，主要在探索动作空间
+2. **快速提升期（200K ~ 1M steps）**：策略快速进步，回报曲线陡峭上升，机器人开始能走几步
+3. **收敛期（1M steps+）**：回报增速放缓，进入精细化调优阶段，步态逐渐稳定
+
+> 💡 人形机器人任务的训练曲线通常波动很大，这是正常现象——因为每次跌倒都会导致回报骤降，而成功行走的回合则会带来高回报。看趋势要看滑动平均。
+
+---
+
+## 🤝 与工业人形机器人的联系
+
+本项目虽然聚焦于仿真环境中的双足运动控制，但积累的方法论可迁移到工业人形机器人研发：
+
+| 本项目技术 | 工业应用对应 |
+|---|---|
+| 奖励工程与奖励设计 | 工业操作任务的奖励函数设计（分拣、装配） |
+| 多算法对比框架 | 不同工业场景选择最优 RL 算法 |
+| 仿真训练 + 评估体系 | sim-to-real 迁移的仿真预训练阶段 |
+| 稳定性分析与消融实验 | 工业场景下策略可靠性验证 |
+| 多物理引擎抽象 | 不同仿真平台间的策略迁移验证 |
+
+---
+
+## 📚 参考文献
+
+1. Schulman, J., et al. (2017). *Proximal Policy Optimization Algorithms*. arXiv:1707.06347.
+2. Haarnoja, T., et al. (2018). *Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL with a Stochastic Actor*. ICML.
+3. Fujimoto, S., et al. (2018). *Addressing Function Approximation Error in Actor-Critic Methods*. ICML.
+4. Todorov, E., et al. (2012). *MuJoCo: A physics engine for model-based control*. IROS.
+5. Brockman, G., et al. (2016). *OpenAI Gym*. arXiv:1606.01540.
+
+---
+
+## 📄 License
+
+MIT License — 详见 [LICENSE](LICENSE) 文件。
+
+---
+
+<p align="center">
+  <i>Built with PyTorch + MuJoCo · Part of CUHK MSc coursework</i>
+</p>
