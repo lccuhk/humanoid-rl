@@ -85,6 +85,216 @@ flake8 .
 pytest tests/ -v
 ```
 
+## 代码风格指南
+
+### Git 提交规范
+
+我们遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**提交类型（type）：**
+- `feat` - 新功能、新算法
+- `fix` - Bug 修复
+- `docs` - 文档更新
+- `style` - 代码格式（不影响代码运行）
+- `refactor` - 重构（既不是新增功能，也不是修改 bug）
+- `perf` - 性能优化
+- `test` - 增加测试
+- `chore` - 构建过程或辅助工具的变动
+- `ci` - CI/CD 配置变更
+- `revert` - 回退提交
+
+**示例：**
+```
+feat(ppo): add curriculum learning for locomotion
+
+- Implement curriculum learning with task difficulty scheduling
+- Add domain randomization for sim-to-real transfer
+- Update training configuration
+- Add ablation study results
+
+Closes #456
+```
+
+**提交规范：**
+- 标题不超过 72 个字符
+- 使用中文或英文均可，但要保持一致
+- 标题使用祈使句（"添加" 而不是 "添加了"）
+- 正文详细说明改动的原因和内容
+- 关联相关 Issue（如 `Closes #123`、`Fixes #456`）
+
+### 命名约定
+
+```python
+# 变量名 - snake_case，描述性命名
+observation = env.reset()
+episode_return = 0.0
+max_episode_steps = 1000
+
+# 函数名 - snake_case，动词开头
+def compute_gae(rewards, values, dones, gamma=0.99, lam=0.95):
+    """计算广义优势估计 (GAE)"""
+    pass
+
+def collect_rollouts(env, agent, num_steps):
+    """收集训练轨迹数据"""
+    pass
+
+# 类名 - PascalCase
+class PPOAgent:
+    """PPO 智能体"""
+    pass
+
+class HumanoidEnv:
+    """人形机器人环境包装器"""
+    pass
+
+class Trainer:
+    """训练器"""
+    pass
+
+# 常量 - UPPER_SNAKE_CASE
+LEARNING_RATE = 3e-4
+GAMMA = 0.99
+GAE_LAMBDA = 0.95
+BATCH_SIZE = 64
+NUM_ENVS = 8
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# 私有变量/方法 - 下划线前缀
+class PPOAgent:
+    def __init__(self):
+        self._actor_net = None
+        self._critic_net = None
+    
+    def _compute_actor_loss(self, batch):
+        """内部策略损失计算方法"""
+        pass
+```
+
+#### 文件命名
+```
+# Python 文件 - snake_case
+ppo_agent.py
+humanoid_env.py
+trainer.py
+__init__.py
+
+# 配置文件 - snake_case
+config.yaml
+hyperparams.py
+
+# 测试文件 - test_ 前缀
+test_ppo_agent.py
+test_humanoid_env.py
+```
+
+### 注释规范
+
+#### Docstring（Google 风格）
+```python
+def train(env, agent, num_episodes, callback=None):
+    """训练强化学习智能体
+
+    Args:
+        env: 人形机器人环境实例
+        agent: 强化学习智能体
+        num_episodes: 训练回合数
+        callback: 训练回调函数
+
+    Returns:
+        包含训练统计信息的字典：
+        - episode_rewards: 每回合奖励列表
+        - episode_lengths: 每回合步数列表
+        - policy_loss: 策略损失列表
+        - value_loss: 价值损失列表
+
+    Raises:
+        ValueError: 环境或智能体未初始化
+        RuntimeError: 训练过程中发生错误
+
+    Example:
+        >>> stats = train(env, agent, num_episodes=1000)
+        >>> plot_training_curves(stats['episode_rewards'])
+    """
+    pass
+```
+
+#### 行内注释
+```python
+# ✅ 好的注释 - 解释为什么这样做
+# 使用 GAE 减少方差，提升策略梯度估计更稳定
+advantages = compute_gae(rewards, values, dones, gamma=0.99, lam=0.95)
+
+# ✅ 好的注释 - 解释复杂的数学公式
+# PPO 裁剪目标函数: L^CLIP(θ) = E[min(r_t(θ)A_t, clip(r_t(θ), 1-ε, 1+ε)A_t]
+# 参考: https://arxiv.org/abs/1707.06347
+policy_loss = -torch.min(surrogate_obj, clipped_obj).mean()
+
+# ❌ 不好的注释 - 重复代码内容
+# 计算损失
+loss = policy_loss + 0.5 * value_loss
+```
+
+### 导入排序规范
+
+```python
+# 1. 标准库
+import os
+import sys
+import argparse
+from collections import deque
+from typing import List, Tuple, Optional, Dict
+
+# 2. 第三方库
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.distributions import Normal
+import gymnasium as gym
+
+# 3. 本地库
+from humanoid_rl.agents.ppo import PPOAgent
+from humanoid_rl.envs.humanoid_env import HumanoidEnv
+from humanoid_rl.utils.logger import Logger
+from humanoid_rl.config import Config
+```
+
+### 错误处理规范
+
+```python
+# ✅ 使用自定义异常
+class TrainingError(Exception):
+    """训练过程异常"""
+    def __init__(self, message: str, episode: int = 0):
+        self.episode = episode
+        super().__init__(f"Episode {episode}: {message}")
+
+# ✅ 捕获具体异常
+try:
+    observation, info = env.reset()
+except gym.error.ResetNeeded as e:
+    logger.warning(f"环境需要重置: {e}")
+    observation, info = env.reset(seed=0)
+except mujoco_py.MujocoException as e:
+    logger.error(f"MuJoCo 仿真错误: {e}")
+    raise TrainingError(f"仿真错误: {e}", episode)
+
+# ❌ 不要静默异常
+try:
+    agent.update(batch)
+except:  # 太宽泛且静默
+    pass
+```
+
 ## 开发环境
 
 1. **克隆仓库**
